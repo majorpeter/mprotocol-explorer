@@ -27,11 +27,16 @@ class MainWindow(QMainWindow):
         self.ui.actionExit.triggered.connect(lambda : self.close())
 
     def connect_dialog(self):
-        entry, ok = QInputDialog.getText(self, 'Connect to device...', 'Enter IP address and port (<ip>:<port>)')
+        entry_text, ok = QInputDialog.getText(self, 'Connect to device...', 'Enter IP address and port (<ip>:<port>)')
         if ok:
-            entry = entry.split(':')
-            ip = entry[0]
-            port = int(entry[1])
+            entry_sections = entry_text.split(':')
+            try:
+                ip = entry_sections[0]
+                port = int(entry_sections[1])
+            except IndexError:
+                QMessageBox.warning(self, 'Error', 'Invalid address!')
+                return
+
             self.connect_to_device(ip, port)
 
     def connect_to_device(self, ip, port):
