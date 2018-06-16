@@ -3,7 +3,8 @@ from PyQt5.QtWidgets import QGridLayout, QLabel, QPushButton, QSpacerItem, QSize
 
 
 class PropertiesPanel(QObject):
-    COLS_COUNT = 4
+    COLS_COUNT = 5
+    PROPERTY_PROPNAME = 'propName'
 
     def __init__(self, parent):
         super(PropertiesPanel, self).__init__(parent)
@@ -27,16 +28,24 @@ class PropertiesPanel(QObject):
 
             editor = QLineEdit()
             editor.setText(prop.data['value'])
+            editor.setProperty(PropertiesPanel.PROPERTY_PROPNAME, prop.data['name'])
             self.grid.addWidget(editor, property_index + 1, 2)
 
             if prop.data['writable']:
                 set_button = QPushButton()
                 set_button.setText('Set')
+                set_button.setProperty(PropertiesPanel.PROPERTY_PROPNAME, prop.data['name'])
                 self.grid.addWidget(set_button, property_index + 1, 3)
             if prop.data['type'] == 'METHOD':
                 call_button = QPushButton()
                 call_button.setText('Call')
+                call_button.setProperty(PropertiesPanel.PROPERTY_PROPNAME, prop.data['name'])
                 self.grid.addWidget(call_button, property_index + 1, 3)
+
+            man_button = QPushButton()
+            man_button.setText('Manual')
+            man_button.setProperty(PropertiesPanel.PROPERTY_PROPNAME, prop.data['name'])
+            self.grid.addWidget(man_button, property_index + 1, 4)
             property_index += 1
 
         vertical_fill = QSpacerItem(1, 1, QSizePolicy.Fixed, QSizePolicy.Expanding)
