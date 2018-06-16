@@ -19,6 +19,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(parent=None)
 
         self.load_or_init_config()
+        self.ui = uic.loadUi('mainwindow.ui', self)
         self.client = None
 
         self.ui.actionConnect_to.triggered.connect(self.connect_dialog)
@@ -35,8 +36,6 @@ class MainWindow(QMainWindow):
                 self.config = json.load(f)
         except FileNotFoundError:
             self.config = {'connection_history': []}
-
-        self.ui = uic.loadUi('mainwindow.ui', self)
 
     def save_config(self):
         with open(MainWindow.CONFIG_PATH, 'w') as f:
