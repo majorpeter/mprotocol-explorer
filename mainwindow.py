@@ -2,6 +2,7 @@ import json
 import webbrowser
 
 from PyQt5 import uic
+from PyQt5.QtCore import pyqtSlot, QModelIndex
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QInputDialog, QAction
 
 from mprotocol_client_python.Client import Client
@@ -21,6 +22,7 @@ class MainWindow(QMainWindow):
         self.load_or_init_config()
         self.ui = uic.loadUi('mainwindow.ui', self)
         self.client = None
+        self.selected_node = None
 
         self.ui.actionConnect_to.triggered.connect(self.connect_dialog)
         self.ui.actionOpen_protocol_specification.triggered.connect(lambda : webbrowser.open(MainWindow.PROTOCOL_SPEC_URL))
@@ -70,4 +72,8 @@ class MainWindow(QMainWindow):
         self.ui.nodeTree.selectionModel().currentChanged.connect(self.node_tree_selection_changed)
 
     def node_tree_selection_changed(self, current_index, prev_index):
-        print(current_index.internalPointer().get_name())
+        self.update_props_panel(current_index.internalPointer())
+
+    def update_props_panel(self, node):
+        self.selected_node = node
+        self.ui.propsGroupBox.setTitle(node.get_name())
