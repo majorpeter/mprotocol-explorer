@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QObject
-from PyQt5.QtWidgets import QGridLayout, QLabel, QPushButton, QSpacerItem, QSizePolicy, QLineEdit
+from PyQt5.QtWidgets import QGridLayout, QLabel, QPushButton, QSpacerItem, QSizePolicy, QLineEdit, QMessageBox
 
 
 class PropertiesPanel(QObject):
@@ -52,6 +52,7 @@ class PropertiesPanel(QObject):
             man_button = QPushButton()
             man_button.setText('Manual')
             man_button.setProperty(PropertiesPanel.PROPERTY_PROPNAME, prop.data['name'])
+            man_button.clicked.connect(self.on_manual_button_pushed)
             self.grid.addWidget(man_button, property_index + 1, 4)
             property_index += 1
 
@@ -67,6 +68,11 @@ class PropertiesPanel(QObject):
         property_name = self.sender().property(PropertiesPanel.PROPERTY_PROPNAME)
         property_value = self.sender().property(PropertiesPanel.PROPERTY_EDITOR).text()
         self.node.__getattr__(property_name)(property_value)
+
+    def on_manual_button_pushed(self):
+        property_name = self.sender().property(PropertiesPanel.PROPERTY_PROPNAME)
+        manual_string = self.node.__getattr__(property_name).get_property_manual()
+        QMessageBox.information(self.parent(), 'Manual', manual_string)
 
     def clear_layout(self):
         while not self.grid.isEmpty():
