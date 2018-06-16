@@ -1,3 +1,4 @@
+import json
 import webbrowser
 
 from PyQt5 import uic
@@ -12,19 +13,31 @@ class MainWindow(QMainWindow):
     ABOUTBOX_MESSAGE = '<b>MProtocol Explorer</b><br/><br/>' \
                        'A simple tool that can be used to walk through the MProtocol property tree.<br/><br/>' \
                        '&copy; 2018 Peter Major'
+    CONFIG_PATH = 'config.json'
 
     def __init__(self):
         super(MainWindow, self).__init__(parent=None)
 
+        self.load_or_init_config()
         self.client = None
-
-
-        self.ui = uic.loadUi('mainwindow.ui', self)
 
         self.ui.actionConnect_to.triggered.connect(self.connect_dialog)
         self.ui.actionOpen_protocol_specification.triggered.connect(lambda : webbrowser.open(MainWindow.PROTOCOL_SPEC_URL))
         self.ui.actionAbout.triggered.connect(lambda : QMessageBox.information(self, 'About', MainWindow.ABOUTBOX_MESSAGE, QMessageBox.Ok))
         self.ui.actionExit.triggered.connect(lambda : self.close())
+
+    def load_or_init_config(self):
+        try:
+            with open(MainWindow.CONFIG_PATH, 'r') as f:
+                self.config = json.load(f)
+        except FileNotFoundError:
+            self.config = {'connection_history': []}
+
+        self.ui = uic.loadUi('mainwindow.ui', self)
+
+    def save_config(self):
+        with open(MainWindow.CONFIG_PATH, 'w') as f:
+            json.dump(self.config, f)
 
     def connect_dialog(self):
         entry_text, ok = QInputDialog.getText(self, 'Connect to device...', 'Enter IP address and port (<ip>:<port>)')
@@ -38,6 +51,9 @@ class MainWindow(QMainWindow):
                 return
 
             self.connect_to_device(ip, port)
+            if entry_text not in self.config['connection_history']:
+                self.config['connection_history'].append(entry_text)
+                self.save_config()
 
     def connect_to_device(self, ip, port):
         self.client = Client(ip, port, timeout=1)
