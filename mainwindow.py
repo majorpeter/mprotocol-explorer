@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QMainWindow, QMessageBox, QInputDialog, QAction
 
 from mprotocol_client_python.Client import Client
 from node_model import NodeModel
+from properties_panel import PropertiesPanel
 
 
 class MainWindow(QMainWindow):
@@ -20,9 +21,11 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(parent=None)
 
         self.load_or_init_config()
-        self.ui = uic.loadUi('mainwindow.ui', self)
         self.client = None
         self.selected_node = None
+
+        self.ui = uic.loadUi('mainwindow.ui', self)
+        self.properties_panel = PropertiesPanel(self.ui.propsGroupBox)
 
         self.ui.actionConnect_to.triggered.connect(self.connect_dialog)
         self.ui.actionOpen_protocol_specification.triggered.connect(lambda : webbrowser.open(MainWindow.PROTOCOL_SPEC_URL))
@@ -77,3 +80,4 @@ class MainWindow(QMainWindow):
     def update_props_panel(self, node):
         self.selected_node = node
         self.ui.propsGroupBox.setTitle(node.get_name())
+        self.properties_panel.display_node(node)
