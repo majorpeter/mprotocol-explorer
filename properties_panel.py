@@ -46,6 +46,7 @@ class PropertiesPanel(QObject):
                 call_button.setText('Call')
                 call_button.setProperty(PropertiesPanel.PROPERTY_PROPNAME, prop.data['name'])
                 call_button.setProperty(PropertiesPanel.PROPERTY_EDITOR, editor)
+                call_button.clicked.connect(self.on_call_button_pushed)
                 self.grid.addWidget(call_button, property_index + 1, 3)
 
             man_button = QPushButton()
@@ -61,6 +62,11 @@ class PropertiesPanel(QObject):
         property_name = self.sender().property(PropertiesPanel.PROPERTY_PROPNAME)
         property_value = self.sender().property(PropertiesPanel.PROPERTY_EDITOR).text()
         self.node[property_name] = property_value
+
+    def on_call_button_pushed(self):
+        property_name = self.sender().property(PropertiesPanel.PROPERTY_PROPNAME)
+        property_value = self.sender().property(PropertiesPanel.PROPERTY_EDITOR).text()
+        self.node.__getattr__(property_name)(property_value)
 
     def clear_layout(self):
         while not self.grid.isEmpty():
