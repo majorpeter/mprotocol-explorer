@@ -64,8 +64,17 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuRecent_Connections">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>Recent Connections</string>
+     </property>
+    </widget>
     <addaction name="actionConnect_to"/>
     <addaction name="actionDisconnect"/>
+    <addaction name="menuRecent_Connections"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -86,6 +95,9 @@
    </property>
   </action>
   <action name="actionDisconnect">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Disconnect</string>
    </property>
@@ -103,6 +115,16 @@
   <action name="actionOpen_protocol_specification">
    <property name="text">
     <string>Open protocol specification</string>
+   </property>
+  </action>
+  <action name="actionReconnect">
+   <property name="text">
+    <string>Recent connectionsd</string>
+   </property>
+  </action>
+  <action name="action1">
+   <property name="text">
+    <string>1</string>
    </property>
   </action>
  </widget>

@@ -2,7 +2,7 @@ import json
 import webbrowser
 
 from PyQt5 import uic
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QInputDialog
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QInputDialog, QAction
 
 from mprotocol_client_python.Client import Client
 from node_model import NodeModel
@@ -25,6 +25,9 @@ class MainWindow(QMainWindow):
         self.ui.actionOpen_protocol_specification.triggered.connect(lambda : webbrowser.open(MainWindow.PROTOCOL_SPEC_URL))
         self.ui.actionAbout.triggered.connect(lambda : QMessageBox.information(self, 'About', MainWindow.ABOUTBOX_MESSAGE, QMessageBox.Ok))
         self.ui.actionExit.triggered.connect(lambda : self.close())
+
+        for entry in self.config['connection_history']:
+            self.add_recent_connection_entry(entry)
 
     def load_or_init_config(self):
         try:
@@ -54,6 +57,13 @@ class MainWindow(QMainWindow):
             if entry_text not in self.config['connection_history']:
                 self.config['connection_history'].append(entry_text)
                 self.save_config()
+                self.add_recent_connection_entry(entry_text)
+
+    def add_recent_connection_entry(self, entry):
+        self.ui.menuRecent_Connections.setEnabled(True)
+        action = QAction(entry, self)
+        action.triggered.connect(lambda : self.connect_to_device(entry.split(':')[0], int(entry.split(':')[1])))
+        self.ui.menuRecent_Connections.addAction(action)
 
     def connect_to_device(self, ip, port):
         self.client = Client(ip, port, timeout=1)
