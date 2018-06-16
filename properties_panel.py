@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QGridLayout, QLabel, QPushButton, QSpacerItem, QSize
 
 
 class PropertiesPanel(QObject):
-    COLS_COUNT = 3
+    COLS_COUNT = 4
 
     def __init__(self, parent):
         super(PropertiesPanel, self).__init__(parent)
@@ -20,12 +20,23 @@ class PropertiesPanel(QObject):
         for prop in props:
             type_label = QLabel(prop.data['type'])
             type_label.setStyleSheet('font-size: 8pt; font-style: italic;')
+            self.grid.addWidget(type_label, property_index + 1, 0)
+
             name_label = QLabel(prop.data['name'])
+            self.grid.addWidget(name_label, property_index + 1, 1)
+
             editor = QLineEdit()
             editor.setText(prop.data['value'])
-            self.grid.addWidget(type_label, property_index + 1, 0)
-            self.grid.addWidget(name_label, property_index + 1, 1)
             self.grid.addWidget(editor, property_index + 1, 2)
+
+            if prop.data['writable']:
+                set_button = QPushButton()
+                set_button.setText('Set')
+                self.grid.addWidget(set_button, property_index + 1, 3)
+            if prop.data['type'] == 'METHOD':
+                call_button = QPushButton()
+                call_button.setText('Call')
+                self.grid.addWidget(call_button, property_index + 1, 3)
             property_index += 1
 
         vertical_fill = QSpacerItem(1, 1, QSizePolicy.Fixed, QSizePolicy.Expanding)
