@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QObject
-from PyQt5.QtWidgets import QGridLayout, QLabel, QPushButton, QSpacerItem, QSizePolicy
+from PyQt5.QtWidgets import QGridLayout, QLabel, QPushButton, QSpacerItem, QSizePolicy, QLineEdit
 
 
 class PropertiesPanel(QObject):
@@ -18,8 +18,14 @@ class PropertiesPanel(QObject):
         props = node.get_properties()
         property_index = 0
         for prop in props:
+            type_label = QLabel(prop.data['type'])
+            type_label.setStyleSheet('font-size: 8pt; font-style: italic;')
             name_label = QLabel(prop.data['name'])
-            self.grid.addWidget(name_label, property_index + 1, 0)
+            editor = QLineEdit()
+            editor.setText(prop.data['value'])
+            self.grid.addWidget(type_label, property_index + 1, 0)
+            self.grid.addWidget(name_label, property_index + 1, 1)
+            self.grid.addWidget(editor, property_index + 1, 2)
             property_index += 1
 
         vertical_fill = QSpacerItem(1, 1, QSizePolicy.Fixed, QSizePolicy.Expanding)
