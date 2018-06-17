@@ -1,6 +1,6 @@
 from enum import Enum
 
-from PyQt5.QtCore import QObject, QTimer
+from PyQt5.QtCore import QObject, QTimer, pyqtSignal
 from PyQt5.QtWidgets import QGridLayout, QLabel, QPushButton, QSpacerItem, QSizePolicy, QLineEdit, QMessageBox
 
 
@@ -9,6 +9,8 @@ class PropertiesPanel(QObject):
     PROPERTY_PROPNAME = 'propName'
     PROPERTY_EDITOR = 'editor'
     PROPERTY_ACTION = 'action'
+
+    propertyChanged = pyqtSignal(QLineEdit, str)
 
     class EditDecoration(Enum):
         Default = 0
@@ -21,9 +23,15 @@ class PropertiesPanel(QObject):
         self.grid = QGridLayout(parent)
         self.node = None
 
+        self.propertyChanged.connect(self.on_property_changed_slot)
+
     def display_node(self, node):
+        if self.node is not None:
+            self.node.unsubscribe_from_all_property_changes(self.on_property_changed)
         self.clear_layout()
         self.node = node
+        if self.node is None:
+            return
 
         manual_label = QLabel(node.get_node_manual())
         self.grid.addWidget(manual_label, 0, 0, 1, PropertiesPanel.COLS_COUNT)
@@ -74,6 +82,8 @@ class PropertiesPanel(QObject):
         vertical_fill = QSpacerItem(1, 1, QSizePolicy.Fixed, QSizePolicy.Expanding)
         self.grid.addItem(vertical_fill, property_index + 2, 0, 1, PropertiesPanel.COLS_COUNT)
 
+        self.node.subscribe_to_all_property_changes(self.on_property_changed)
+
     def on_set_button_pushed(self):
         property_name = self.sender().property(PropertiesPanel.PROPERTY_PROPNAME)
         property_editor = self.sender().property(PropertiesPanel.PROPERTY_EDITOR)
@@ -117,6 +127,26 @@ class PropertiesPanel(QObject):
         property_name = self.sender().property(PropertiesPanel.PROPERTY_PROPNAME)
         manual_string = self.node.__getattr__(property_name).get_property_manual()
         QMessageBox.information(self.parent(), 'Manual', manual_string)
+
+    def on_property_changed(self, name, value):
+        i = 1
+        while True:
+            item = self.grid.itemAtPosition(i, 2)
+            if not item:
+                return
+            widget = item.widget()
+            if widget.property(PropertiesPanel.PROPERTY_PROPNAME) == name:
+                self.propertyChanged.emit(widget, value)
+                return
+            i += 1
+
+    def on_property_changed_slot(self, editor, value):
+        """
+        moves the notification to the right thread so that Qt timer can be used
+        :param editor: QLineEdit instance to decorate
+        """
+        editor.setText(value)
+        self.decorate_editor(editor, PropertiesPanel.EditDecoration.Blink)
 
     def decorate_editor(self, editor, decoration, timeout_sec=1):
         if decoration == PropertiesPanel.EditDecoration.Default:
