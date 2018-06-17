@@ -80,8 +80,13 @@ class PropertiesPanel(QObject):
 
     def on_call_button_pushed(self):
         property_name = self.sender().property(PropertiesPanel.PROPERTY_PROPNAME)
-        property_value = self.sender().property(PropertiesPanel.PROPERTY_EDITOR).text()
-        self.node.__getattr__(property_name)(property_value)
+        property_editor = self.sender().property(PropertiesPanel.PROPERTY_EDITOR)
+        property_value = property_editor.text()
+        result = self.node.__getattr__(property_name)(property_value)
+        if result:
+            self.decorate_editor(property_editor, PropertiesPanel.EditDecoration.Success)
+        else:
+            self.decorate_editor(property_editor, PropertiesPanel.EditDecoration.Error)
 
     def on_manual_button_pushed(self):
         property_name = self.sender().property(PropertiesPanel.PROPERTY_PROPNAME)
