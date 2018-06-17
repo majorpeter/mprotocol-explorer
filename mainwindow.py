@@ -1,9 +1,11 @@
 import json
 import os
 import webbrowser
+from html import escape
 
 from PyQt5 import uic
-from PyQt5.QtCore import pyqtSlot, QModelIndex
+from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal
+from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QInputDialog, QAction
 
 from mprotocol_client_python.Client import Client
@@ -17,6 +19,8 @@ class MainWindow(QMainWindow):
                        'A simple tool that can be used to walk through the MProtocol property tree.<br/><br/>' \
                        '&copy; 2018 Peter Major'
     CONFIG_PATH = os.path.dirname(os.path.realpath(__file__)) + os.path.sep + 'config.json'
+
+    communication_log_available = pyqtSignal(str)
 
     def __init__(self):
         super(MainWindow, self).__init__(parent=None)
@@ -32,6 +36,8 @@ class MainWindow(QMainWindow):
         self.ui.actionOpen_protocol_specification.triggered.connect(lambda : webbrowser.open(MainWindow.PROTOCOL_SPEC_URL))
         self.ui.actionAbout.triggered.connect(lambda : QMessageBox.information(self, 'About', MainWindow.ABOUTBOX_MESSAGE, QMessageBox.Ok))
         self.ui.actionExit.triggered.connect(lambda : self.close())
+
+        self.communication_log_available.connect(self.communication_log_available_slot)
 
         for entry in self.config['connection_history']:
             self.add_recent_connection_entry(entry)
@@ -72,8 +78,29 @@ class MainWindow(QMainWindow):
 
     def connect_to_device(self, ip, port):
         self.client = Client(ip, port, timeout=1)
+        self.client.set_trace_callbacks(self.communication_log_rx, self.communication_log_tx)
+
         self.ui.nodeTree.setModel(NodeModel(root_node=self.client.root, parent=self))
         self.ui.nodeTree.selectionModel().currentChanged.connect(self.node_tree_selection_changed)
+
+    def communication_log_rx(self, message):
+        self.communication_log_available.emit('<span style="color: #D9D9D9">◀</span> <span style="color: #FF5D26">%s</span>' % escape(message))
+
+    def communication_log_tx(self, message):
+        self.communication_log_available.emit('<span style="color: #D9D9D9">▶</span> <span style="color: #2CB1DE">%s</span>' % escape(message))
+
+    def communication_log_available_slot(self, html):
+        self.ui.commLogView.append(html)
+        self.truncate_communication_log()
+
+    def truncate_communication_log(self):
+        while self.ui.commLogView.document().blockCount() > 10:
+            cursor = self.ui.commLogView.textCursor()
+            cursor.movePosition(QTextCursor.Start)
+            cursor.select(QTextCursor.LineUnderCursor)
+            cursor.removeSelectedText()
+            cursor.deleteChar()
+        self.ui.commLogView.moveCursor(QTextCursor.End)
 
     def node_tree_selection_changed(self, current_index, prev_index):
         self.update_props_panel(current_index.internalPointer())
