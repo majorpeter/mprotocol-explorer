@@ -160,8 +160,11 @@ class PropertiesPanel(QObject):
 
         # clear decoration after timeout
         if timeout_sec != 0:
-            QTimer.singleShot(timeout_sec * 1000,
-                      lambda : self.decorate_editor(editor, PropertiesPanel.EditDecoration.Default, timeout_sec=0))
+            timer = QTimer(editor)
+            timer.setInterval(timeout_sec * 1000)
+            timer.setSingleShot(True)
+            timer.timeout.connect(lambda : self.decorate_editor(editor, PropertiesPanel.EditDecoration.Default, timeout_sec=0))
+            timer.start()
 
     def clear_layout(self):
         while not self.grid.isEmpty():
