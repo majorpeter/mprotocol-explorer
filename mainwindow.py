@@ -1,4 +1,5 @@
 import json
+import os
 import webbrowser
 
 from PyQt5 import uic
@@ -24,7 +25,7 @@ class MainWindow(QMainWindow):
         self.client = None
         self.selected_node = None
 
-        self.ui = uic.loadUi('mainwindow.ui', self)
+        self.ui = uic.loadUi(os.path.dirname(os.path.realpath(__file__)) + os.path.sep + 'mainwindow.ui', self)
         self.properties_panel = PropertiesPanel(self.ui.propsGroupBox)
 
         self.ui.actionConnect_to.triggered.connect(self.connect_dialog)
