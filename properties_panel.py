@@ -1,4 +1,6 @@
-from PyQt5.QtCore import QObject
+from enum import Enum
+
+from PyQt5.QtCore import QObject, QTimer
 from PyQt5.QtWidgets import QGridLayout, QLabel, QPushButton, QSpacerItem, QSizePolicy, QLineEdit, QMessageBox
 
 
@@ -6,6 +8,12 @@ class PropertiesPanel(QObject):
     COLS_COUNT = 5
     PROPERTY_PROPNAME = 'propName'
     PROPERTY_EDITOR = 'editor'
+
+    class EditDecoration(Enum):
+        Default = 0
+        Success = 1
+        Error = 2
+        Blink = 3
 
     def __init__(self, parent):
         super(PropertiesPanel, self).__init__(parent)
@@ -61,8 +69,14 @@ class PropertiesPanel(QObject):
 
     def on_set_button_pushed(self):
         property_name = self.sender().property(PropertiesPanel.PROPERTY_PROPNAME)
-        property_value = self.sender().property(PropertiesPanel.PROPERTY_EDITOR).text()
-        self.node[property_name] = property_value
+        property_editor = self.sender().property(PropertiesPanel.PROPERTY_EDITOR)
+        property_value = property_editor.text()
+        try:
+            self.node[property_name] = property_value
+            self.decorate_editor(property_editor, PropertiesPanel.EditDecoration.Success)
+        except BaseException as e:
+            self.decorate_editor(property_editor, PropertiesPanel.EditDecoration.Error)
+            print(e)
 
     def on_call_button_pushed(self):
         property_name = self.sender().property(PropertiesPanel.PROPERTY_PROPNAME)
@@ -73,6 +87,21 @@ class PropertiesPanel(QObject):
         property_name = self.sender().property(PropertiesPanel.PROPERTY_PROPNAME)
         manual_string = self.node.__getattr__(property_name).get_property_manual()
         QMessageBox.information(self.parent(), 'Manual', manual_string)
+
+    def decorate_editor(self, editor, decoration, timeout_sec=1):
+        if decoration == PropertiesPanel.EditDecoration.Default:
+            editor.setStyleSheet('')
+        elif decoration == PropertiesPanel.EditDecoration.Success:
+            editor.setStyleSheet('background: #ccffcc;')
+        elif decoration == PropertiesPanel.EditDecoration.Error:
+            editor.setStyleSheet('background: #ffcccc;')
+        elif decoration == PropertiesPanel.EditDecoration.Blink:
+            editor.setStyleSheet('background: #ffffee; color: #0000de')
+
+        # clear decoration after timeout
+        if timeout_sec != 0:
+            QTimer.singleShot(timeout_sec * 1000,
+                      lambda : self.decorate_editor(editor, PropertiesPanel.EditDecoration.Default, timeout_sec=0))
 
     def clear_layout(self):
         while not self.grid.isEmpty():
