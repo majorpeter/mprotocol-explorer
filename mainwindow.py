@@ -37,6 +37,9 @@ class MainWindow(QMainWindow):
         self.ui.actionAbout.triggered.connect(lambda : QMessageBox.information(self, 'About', MainWindow.ABOUTBOX_MESSAGE, QMessageBox.Ok))
         self.ui.actionExit.triggered.connect(lambda : self.close())
 
+        self.ui.commEdit.returnPressed.connect(self.communication_send_manual)
+        self.ui.commSendBtn.clicked.connect(self.communication_send_manual)
+        self.ui.commClearBtn.clicked.connect(lambda : self.ui.commLogView.clear())
         self.communication_log_available.connect(self.communication_log_available_slot)
 
         for entry in self.config['connection_history']:
@@ -92,6 +95,10 @@ class MainWindow(QMainWindow):
     def communication_log_available_slot(self, html):
         self.ui.commLogView.append(html)
         self.truncate_communication_log()
+
+    def communication_send_manual(self):
+        if self.client:
+            self.client.send_sync(self.ui.commEdit.text())
 
     def truncate_communication_log(self):
         while self.ui.commLogView.document().blockCount() > 10:
