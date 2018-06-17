@@ -16,7 +16,7 @@ class MainWindow(QMainWindow):
     ABOUTBOX_MESSAGE = '<b>MProtocol Explorer</b><br/><br/>' \
                        'A simple tool that can be used to walk through the MProtocol property tree.<br/><br/>' \
                        '&copy; 2018 Peter Major'
-    CONFIG_PATH = 'config.json'
+    CONFIG_PATH = os.path.dirname(os.path.realpath(__file__)) + os.path.sep + 'config.json'
 
     def __init__(self):
         super(MainWindow, self).__init__(parent=None)
