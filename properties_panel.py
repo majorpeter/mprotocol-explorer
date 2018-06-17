@@ -9,6 +9,7 @@ class PropertiesPanel(QObject):
     PROPERTY_PROPNAME = 'propName'
     PROPERTY_EDITOR = 'editor'
     PROPERTY_ACTION = 'action'
+    PROPERTY_DECORATION_TIMER = 'timer'
 
     propertyChanged = pyqtSignal(QLineEdit, str)
 
@@ -149,6 +150,10 @@ class PropertiesPanel(QObject):
         self.decorate_editor(editor, PropertiesPanel.EditDecoration.Blink)
 
     def decorate_editor(self, editor, decoration, timeout_sec=1):
+        timer = editor.property(PropertiesPanel.PROPERTY_DECORATION_TIMER)
+        if timer:
+            timer.stop()
+
         if decoration == PropertiesPanel.EditDecoration.Default:
             editor.setStyleSheet('')
         elif decoration == PropertiesPanel.EditDecoration.Success:
@@ -165,6 +170,7 @@ class PropertiesPanel(QObject):
             timer.setSingleShot(True)
             timer.timeout.connect(lambda : self.decorate_editor(editor, PropertiesPanel.EditDecoration.Default, timeout_sec=0))
             timer.start()
+            editor.setProperty(PropertiesPanel.PROPERTY_DECORATION_TIMER, timer)
 
     def clear_layout(self):
         while not self.grid.isEmpty():
