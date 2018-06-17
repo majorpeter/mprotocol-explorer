@@ -8,6 +8,7 @@ class PropertiesPanel(QObject):
     COLS_COUNT = 5
     PROPERTY_PROPNAME = 'propName'
     PROPERTY_EDITOR = 'editor'
+    PROPERTY_ACTION = 'action'
 
     class EditDecoration(Enum):
         Default = 0
@@ -43,6 +44,9 @@ class PropertiesPanel(QObject):
             self.grid.addWidget(editor, property_index + 1, 2)
 
             if prop.data['writable']:
+                editor.setProperty(PropertiesPanel.PROPERTY_ACTION, 'SET')
+                editor.returnPressed.connect(self.on_return_pressed)
+
                 set_button = QPushButton()
                 set_button.setText('Set')
                 set_button.setProperty(PropertiesPanel.PROPERTY_PROPNAME, prop.data['name'])
@@ -50,6 +54,9 @@ class PropertiesPanel(QObject):
                 set_button.clicked.connect(self.on_set_button_pushed)
                 self.grid.addWidget(set_button, property_index + 1, 3)
             if prop.data['type'] == 'METHOD':
+                editor.setProperty(PropertiesPanel.PROPERTY_ACTION, 'CALL')
+                editor.returnPressed.connect(self.on_return_pressed)
+
                 call_button = QPushButton()
                 call_button.setText('Call')
                 call_button.setProperty(PropertiesPanel.PROPERTY_PROPNAME, prop.data['name'])
@@ -87,6 +94,24 @@ class PropertiesPanel(QObject):
             self.decorate_editor(property_editor, PropertiesPanel.EditDecoration.Success)
         else:
             self.decorate_editor(property_editor, PropertiesPanel.EditDecoration.Error)
+
+    def on_return_pressed(self):
+        property_name = self.sender().property(PropertiesPanel.PROPERTY_PROPNAME)
+        property_value = self.sender().text()
+        action = self.sender().property(PropertiesPanel.PROPERTY_ACTION)
+        if action == 'SET':
+            try:
+                self.node[property_name] = property_value
+                self.decorate_editor(self.sender(), PropertiesPanel.EditDecoration.Success)
+            except BaseException as e:
+                self.decorate_editor(self.sender(), PropertiesPanel.EditDecoration.Error)
+                print(e)
+        elif action == 'CALL':
+            result = self.node.__getattr__(property_name)(property_value)
+            if result:
+                self.decorate_editor(self.sender(), PropertiesPanel.EditDecoration.Success)
+            else:
+                self.decorate_editor(self.sender(), PropertiesPanel.EditDecoration.Error)
 
     def on_manual_button_pushed(self):
         property_name = self.sender().property(PropertiesPanel.PROPERTY_PROPNAME)
