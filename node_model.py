@@ -49,7 +49,11 @@ class NodeModel(QAbstractItemModel):
         else:
             parentItem = parent.internalPointer()
 
-        return len(parentItem.get_children())
+        try:
+            return len(parentItem.get_children())
+        except:
+            pass
+        return 0
 
     def data(self, index, role=None):
         if role == Qt.DisplayRole:
