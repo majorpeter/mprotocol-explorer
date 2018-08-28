@@ -2,9 +2,11 @@
 ABSPATH=$(cd "$(dirname "$0")" && pwd)
 
 if [ ! -d "$ABSPATH/venv" ]; then
-    echo "Virtual env not found under ./venv"
-    exit 1
+    python3 -m virtualenv "$ABSPATH/venv"
+    source "$ABSPATH/venv/bin/activate"
+    pip install PyQt5
+else
+    source "$ABSPATH/venv/bin/activate"
 fi
 
-source "$ABSPATH/venv/bin/activate"
 "$ABSPATH/explorer.py"
